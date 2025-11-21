@@ -34,7 +34,7 @@ jobs:
       - name: Build and push Proxy image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./tools/dnsproxy
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.DNSPROXY_IMAGE }}:${{ env.DOCKER_VERSION }},${{ env.DNSPROXY_IMAGE }}:latest
