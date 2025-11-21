@@ -1,5 +1,5 @@
 # coding: utf-8
-from cStringIO import StringIO
+from io import BytesIO as StringIO
 import struct
 
 DNS_FLAG_QR = 0x8000

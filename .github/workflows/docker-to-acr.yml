@@ -1,0 +1,35 @@
+name: Build & Push Docker Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'stream-gateway/*'
+
+env:
+  IMAGE_NAME: dnsproxy
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: ${{ vars.REGISTRY_SERVER != '' && vars.REGISTRY_USERNAME != '' && vars.REGISTRY_ORGANISATION != '' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set env variables
+        run: |
+          echo "DOCKER_VERSION=$(grep VERSION tools/dnsproxy/dnsproxy.properties | awk -F= '{print $2}')" >> $GITHUB_ENV
+          echo "DNSPROXY_IMAGE=${{ vars.REGISTRY_SERVER }}/${{ vars.REGISTRY_ORGANISATION }}/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
+      - name: Login to container registry
+        uses: docker/login-action@v3
+        with:
+            registry: ${{ vars.REGISTRY_SERVER }}
+            username: ${{ vars.REGISTRY_USERNAME }}
+            password: ${{ secrets.REGISTRY_TOKEN }}
+      - name: Build and push Proxy image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ env.DNSPROXY_IMAGE }}:${{ env.DOCKER_VERSION }},${{ env.DNSPROXY_IMAGE }}:latest
